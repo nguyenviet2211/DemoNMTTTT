@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân loại tin nhắn Spam/Ham</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 2rem;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .result-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+        .ham {
+            background-color: rgb(230, 255, 230);  /* Màu xanh nhạt hơn */
+            border: 1px solid rgb(0, 128, 0); 
+        }
+        .spam {
+            background-color: rgb(255, 230, 230);  /* Màu đỏ nhạt hơn */
+            border: 1px solid rgb(204, 0, 0);
+        }
+
+        .hamText {
+            color: green;
+        }
+
+        .spamText {
+            color: red;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Phân loại tin nhắn Spam/Ham</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <form id="classifyForm">
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Nhập tin nhắn cần phân loại:</label>
+                        <textarea class="form-control" id="message" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Phân loại</button>
+                </form>
+
+                <div id="result" class="result-box">
+                    <h5>Kết quả phân loại:</h5>
+                    <p id="resultText"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('classifyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const message = document.getElementById('message').value;
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('resultText');
+            
+            try {
+                const response = await fetch('/classify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'result-box ' + data.result.toLowerCase();
+                    resultText.className = data.result.toLowerCase() + 'Text';
+                    const a = data.result === "SPAM" ? "HAM" : "SPAM";
+                    resultText.innerHTML = `<b>Xác suất ${data.result}:  ${data.accuracy} <br/>Xác suất ${a}: ${data.a}<br/>Kết quả là: ${data.result}</b>`;
+                } else {
+                    alert(data.error || 'Có lỗi xảy ra');
+                }
+            } catch (error) {
+                alert('Có lỗi xảy ra khi gửi yêu cầu');
+            }
+        });
+    </script>
+</body>
+</html> 
