@@ -3,20 +3,24 @@ from model import NaiveBayes
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 
 def evaluate_model(model, test_data):
+    test_data = test_data.dropna()
+    test_data.columns = ['Label', 'SMS']
+    test_data['Label'] = test_data['Label'].str.lower()
+
     """Đánh giá mô hình trên tập test"""
     y_true = []
     y_pred = []
-    
+        
     for index, row in test_data.iterrows():
         message = row['SMS']
-        expected = row['Label'].lower()
-        result = model.classify(message)
-        predicted = "ham" if result else "spam"
-        
+        expected = row['Label']
+        ham, spam = model.classify(message)
+        predicted = "ham" if ham > spam else "spam"
+            
         y_true.append(expected)
         y_pred.append(predicted)
-    
-    # Tính toán các chỉ số đánh giá
+        
+        # Tính toán các chỉ số đánh giá
     precision = precision_score(y_true, y_pred, pos_label='spam')
     recall = recall_score(y_true, y_pred, pos_label='spam')
     f1 = f1_score(y_true, y_pred, pos_label='spam')
